@@ -1,195 +1,272 @@
-#include<iostream>
-#include<stack>
+#include <iostream>
+#include <stack>
 using namespace std;
 
-class Node {
-    int data;
-    Node *left, *right;
-    
-    Node() {
-        data=0;
-        left=right=nullptr;
-    }
-    
-    Node(int d) {
-        data=d;
-        left=right=nullptr;
-    }
-    
-    friend class BST;
+class Node{
+  public:
+  int data;
+  Node *left, *right;
+  Node(int val){
+    data=val;
+    left=right=NULL;
+  }
 };
 
-class BST{
-    Node *root=nullptr;
-    
-    int height(Node *node){
-        if(node==nullptr)
-            return 0;
-        
-        int l = height(node->left);
-        int r = height(node->right);
-        return max(l,r)+1;
+class BT{
+  private:
+  Node *root;
+  void insertNode(Node* &root, Node *tobeinserted){
+    if (root == NULL){
+        root = tobeinserted;
+        return;
+    }
+    if(root->left==NULL){                                 //checks if left root is available or not
+        insertNode(root->left, tobeinserted);
+    } else if(root->left!=NULL && root->right==NULL){     //if left is not empty, send to right
+        insertNode(root->right, tobeinserted);
+    }
+    else{                                               //send to left root anyways
+        insertNode(root->left, tobeinserted);
+    }
+  }
+
+  
+  void inordertrav(Node *root){
+    if(root==NULL){
+      return;
+    }
+    inordertrav(root->left);
+    cout<<root->data<<" ";
+    inordertrav(root->right);
+  }
+  
+  void preordertrav(Node *root){
+    if(root==NULL){
+      return;
     }
     
-    void swapNodes(Node *node){
-        if(node==nullptr)
-            return;
-        
-        if(node->left or node->right){
-            Node *temp = node->left;
-            node->left=node->right;
-            node->right=temp;
-        }
-        
-        swapNodes(node->right);
-        swapNodes(node->left);
+    cout<<root->data<<" ";
+    preordertrav(root->left);
+    preordertrav(root->right);
+  }
+  
+  void postordertrav(Node *root){
+    if(root==NULL){
+      return;
     }
+    postordertrav(root->left);
+    postordertrav(root->right);
+    cout<<root->data<<" ";
+  }
+  
+  void swapchildren(Node *root){
+    if(root==NULL){
+      return;
+    }
+    swapchildren(root->left);
+    swapchildren(root->right);
+    swap(root->left, root->right);
+  }
+  
+  int findheight(Node *root){
+    if(root==NULL){
+      return 0;
+    }
+    return 1+max(findheight(root->left), findheight(root->right));
+  }
+  
+  void deletetree(Node *root){
+    if(root==NULL){
+      return;
+    }
+    deletetree(root->left);
+    deletetree(root->right);
+    delete root;
+  }
+  
+  Node *copytree(Node *root){
+    if(root==NULL){
+      return NULL;
+    }
+    Node *copyRoot=new Node(root->data);
+    copyRoot->left=copytree(root->left);
+    copyRoot->right=copytree(root->right);
+    return copyRoot;
+  }
+  
+  void recur(Node *root, int &count, int flag){
+    if(root==NULL){
+      return;                   //return nothing
+    }
+    recur(root->left, count, flag);  //in left subtree
     
-    void preorder() {
-        Node *curr=root;
-        stack<Node*> Stack;
-        
-        while(!Stack.empty() or curr != nullptr){
-            while(curr!=nullptr){
-                Stack.push(curr);
-                curr=curr->left;
-            }
-            curr=Stack.top();
-            Stack.pop();
-            cout<<curr->data<<" ";
-            curr=curr->right;
-        }
+    if(flag==1 && (root->left!=NULL || root->right!=NULL)){
+      count++;                 //increases count of internal nodes
     }
-    
-    Node* minValueNode(Node* node){
-        Node *curr=node;
-        while(curr->left!=nullptr)
-            curr=curr->left;
-        
-        return curr;
+    else if(flag==-1 &&(root->left==NULL && root->right==NULL)){
+      count++;                //increases count of leaf nodes
     }
-    
-    Node* deletesubTree(Node *root, int key){
-        if(key > root->data)
-            root->right=deletesubTree(root->right, key);
-        else if(key < root->data)
-            root->left=deletesubTree(root->left, key);
-        else{
-            if(root->right==nullptr or root->left==nullptr){
-                Node *temp=root->left ? root->left:root->right;
-                
-                if(temp==nullptr){
-                    temp=root;
-                    root=nullptr;
-                }
-                
-                else{
-                    root->data=temp->data;
-                    root->left=root->right=nullptr;
-                }
-                
-                delete temp;
-            }
-            
-            else{
-                Node *temp=minValueNode(root->right);
-                root->data=temp->data;
-                
-                root->right=deletesubTree(root->right, temp->data);
-            }
-        }
-        
-        return root;
+    else if(flag==0){
+      count++;               //increases count of every node.
     }
-    
-    public:
-    void insert(int d){
-        Node *curr=root, *prev =nullptr;
-        
-        if(curr==nullptr){
-            root=new Node(d);
-        }
-        
-        else{
-            while(curr!=nullptr){
-                if(d>curr->data){
-                    prev=curr;
-                    curr=curr->right;
-                }
-                else if(d<curr->data){
-                    prev=curr;
-                    curr=curr->left;
-                }
-                else{
-                    cout<<"Node already exists"<<endl;
-                    return;
-                }
-            }
-            
-            if(d>prev->data){
-                Node *temp=new Node(d);
-                prev->right=temp;
-            }
-            
-            else{
-                Node *temp=new Node(d);
-                prev->left=temp;
-            }
-        }
+    recur(root->right, count, flag);
+  }
+  
+  public:
+  BT(){root=NULL;}
+  BT(Node *root1){root=root1;}
+  void insert(int val){
+    Node *newNode=new Node(val);
+    insertNode(root, newNode);
+  }
+  void inorder(){ inordertrav(root); }
+  void preorder(){ preordertrav(root); }
+  void postorder(){ postordertrav(root); }
+  void swaptree(){ swapchildren(root); }
+  int height(){ return findheight(root); }
+  
+  BT copy(){
+    BT newTree;
+    newTree.root=copytree(root);
+    return newTree;
+  }
+  
+  int countnodes(){
+    int count=0;
+    recur(root, count, 0);
+    return count;
+  }
+  
+  int countinternodes(){
+    int count=0;
+    recur(root, count, 1);
+    return count;
+  }
+  
+  int countleafnodes(){
+    int count=0;
+    recur(root, count, -1);
+    return count;
+  }
+  
+  void cleartree(){
+    deletetree(root);
+    root=NULL;
+  }
+  
+  void insertarray(int arr[], int size){          //insert multiple nodes in single go.
+    for(int i=0; i<size; i++){
+      insert(arr[i]);
     }
-    
-    void search(int d){
-        Node *curr=root;
-        while(curr!=nullptr){
-            if(d>curr->data)
-                curr=curr->right;
-            else if(d<curr->data)
-                curr=curr->left;
-            else{
-                cout<<"\nNode found"<<endl;
-                return;
-            }
-        }
-        cout<<"\nNode doesn't exist"<<endl;
-    }
-    void del(int key){
-        root=deletesubTree(root, key);
-    }
-    
-    void getheight(){
-        cout<<"\nNumber of nodes in the longest path: "<<height(root)+1<<endl;
-    }
-    
-    void getminValue(){
-        cout<<"\nMinimum value in the tree: "<<minValueNode(root)->data<<endl;
-    }
-    void getAscending(){
-        cout<<"\nValues in ascending order are: ";
-        preorder();
-    }
-    void printSwapped(){
-        swapNodes(root);
-        cout<<"\nTrees are swapped:"<<endl;
-        preorder();
-    }
+  }
 };
 
 int main(){
-    BST tree;
+  BT tree;
+  int choice, val;
+  
+  do{
+    cout<<"\nMenu: ";
+    cout<<"\n1. Insert Node";
+    cout<<"\n2. Insert Multiple Nodes";
+    cout<<"\n3. Inorder Traversal";
+    cout<<"\n4. Preorder Traversal";
+    cout<<"\n5. Postorder Traversal";
+    cout<<"\n6. Swap Tree";
+    cout<<"\n7. Find Height";
+    cout<<"\n8. Copy Tree";
+    cout<<"\n9. Count all nodes";
+    cout<<"\n10. Count internal nodes";
+    cout << "\n11. Count Leaf Nodes";
+    cout<<"\n12. Clear tree";
+    cout<<"\n13. Exit";
+    cout<<"\nEnter your choice: ";
+    cin>>choice;
     
-    tree.insert(50);
-    tree.insert(51);
-    tree.insert(68);
-    tree.insert(37);
-    tree.insert(100);
-    tree.insert(29);
-    
-    tree.getAscending();
-    
-    tree.del(37);
-    
-    tree.getAscending();
-    tree.getheight();
-    
-    return 0;
+    switch(choice){
+      case 1:
+        cout<<"Enter value: ";
+        cin>>val;
+        tree.insert(val);
+        cout<<"\n";
+        tree.inorder();
+        break;
+        
+        
+      case 2:
+      {
+        int n, *arr;
+        cout<<"Enter number of values to enter: ";
+        cin>>n;
+        arr= new int[n];
+        cout<<"Enter "<<n<<" elements:";
+        for (int i=0; i<n; i++){
+          cin>>arr[i];
+        }
+        tree.insertarray(arr, n);
+        cout<<"Elements entered successfuly";
+        break;
+      }
+      
+      case 3:
+        cout<<"Inorder Traversal: ";
+        tree.inorder();
+        cout<<endl;
+        break;
+      
+      case 4:
+        cout<<"Preorder Traversal: ";
+        tree.preorder();
+        cout<<endl;
+        break;
+        
+      case 5:
+        cout<<"Postorder Traversal: ";
+        tree.postorder();
+        cout<<endl;
+        break;
+        
+      
+      case 6:
+        tree.swaptree();
+        cout<<"Tree Swapped."<<endl;
+        break;
+      
+      case 7:
+        cout<<"Height of tree: "<<tree.height()<<endl;
+        break;
+        
+      case 8:
+      {
+        BT copiedTree=tree.copy();
+        cout<<"Tree copied."<<endl;
+        break;
+      }
+      case 9:
+        cout<<"Total Nodes: "<<tree.countnodes()<<endl;
+        break;
+        
+      case 10:
+        cout<<"Internal nodes: "<<tree.countinternodes()<<endl;
+        break;
+        
+      case 11:
+        cout<<"Leaf nodes: "<<tree.countleafnodes()<<endl;
+        break;
+        
+      case 12:
+        tree.cleartree();
+        cout<<"Tree cleared"<<endl;
+        break;
+        
+      case 13:
+        cout<<"Exiting Program."<<endl;
+        break;
+        
+    default:
+        cout<<"Invalid choice! Please try again."<<endl;
+    }
+  }while(choice != 13);
+  
+  return 0;
 }
