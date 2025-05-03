@@ -1,331 +1,351 @@
+// A dictionary stores keywords and its meanings. Provide facility for add-
+// ing new keywords, deleting keywords, updating values of any entry.
+// Provide facility to display whole data sorted in ascending/ Descending
+// order. Also find how many maximum comparisons may require for finding
+// any keyword. Use Binary Search Tree for implementation.
+
 #include <iostream>
-#include <stack>
-#include <queue>
-#include <unordered_map>
 using namespace std;
 
-class Node {
-    int data;
-    Node *left, *right;
-
-    Node() {
-        data = 0;
-        left = right = nullptr;
-    }
-
-    Node(int d) {
-        data = d;
-        left = right = nullptr;
-    }
-
-    friend class BT;
+class Node
+{
+    private:
+    string data;
+    string meaning;
+    Node *left;
+    Node *right;
+    public:
+    Node(string val1, string val2) : data(val1) , meaning(val2) , left(nullptr) , right(nullptr) {}
+    friend class BST;
 };
 
-class BT {
+class BST
+{
+    private:
+    Node *root;
+    public:
+    BST(): root(nullptr){}
 
-    Node* buildTree (Node *root) {
-        cout<<"\nData (-1: Null): ";
-        int d;
-        cin>>d;
-        root = new Node(d);
-
-        if(d == -1)
-            return nullptr;
-
-        cout<<"Enter data for left of "<<d<<endl;
-        root->left = buildTree(root->left);
-        cout<<"Enter data for right of "<<d<<endl;
-        root->right = buildTree(root->right);
-    }
-
-    void rswapAllNodes(Node *root)
+    void insert(string val1, string val2)
     {
-        if(root == nullptr)
-            return;
-        
-        if(root->left || root->right) // If either of left or right of root exists
+        if(root==nullptr)
         {
-            Node *temp = root->left;
-            root->left = root->right;
-            root->right = temp;
-        }
-        rswapAllNodes(root->right); // Continue in right subtree
-        rswapAllNodes(root->left);  // Continue in left subtree
-    }
-
-    void iswapAllNodes(Node* root) {
-        if (root == nullptr)
+            root=new Node(val1,val2);
             return;
-
-        std::stack<Node*> nodeStack;
-        nodeStack.push(root);
-
-        while (!nodeStack.empty()) {
-            Node* current = nodeStack.top();
-            nodeStack.pop();
-
-            if (current->left || current->right) {
-                Node* temp = current->left;
-                current->left = current->right;
-                current->right = temp;
-            }
-
-            if (current->right)
-                nodeStack.push(current->right);
-
-            if (current->left)
-                nodeStack.push(current->left);
         }
-    }
-
-    Node* rClone(Node *root) {
-        if(root == nullptr)
-            return nullptr;
-
-        Node *rootCopy = new Node(root->data);
-        rootCopy->right = rClone(root->right);
-        rootCopy->left = rClone(root->left);
-
-        return rootCopy;
-    }
-
-    Node* iClone(Node* root) {
-        if (root == nullptr)
-            return nullptr;
-
-        stack<Node*> nodeStack;
-        unordered_map<Node*, Node*> cloneMap;
-
-        Node* rootCopy = new Node(root->data);
-        cloneMap[root] = rootCopy;
-        nodeStack.push(root);
-
-        while (!nodeStack.empty()) {
-            Node* current = nodeStack.top();
-            nodeStack.pop();
-
-            Node* currentCopy = cloneMap[current];
-
-            if (current->right) {
-                Node* rightCopy = new Node(current->right->data);
-                currentCopy->right = rightCopy;
-                cloneMap[current->right] = rightCopy;
-                nodeStack.push(current->right);
-            }
-
-            if (current->left) {
-                Node* leftCopy = new Node(current->left->data);
-                currentCopy->left = leftCopy;
-                cloneMap[current->left] = leftCopy;
-                nodeStack.push(current->left);
+        Node *current = root;
+        Node *parent = nullptr;
+        while (current != nullptr)
+        {
+            parent = current;
+            if (val1 < current->data)
+                current = current->left;
+            else if (val1 > current->data)
+                current = current->right;
+            else
+            {
+                cout << "Duplicate entry not allowed!!!" << endl;
+                return;
             }
         }
-
-        return rootCopy;
-    }
-
-    int rHeight(Node *node) {
-        if(node == nullptr)
-            return 0;
-
-        int l = rHeight(node->left);
-        int r = rHeight(node->right);
-
-        return max(l,r) + 1;
-    }
-
-    int iHeight(Node* root) {
-        if (root == nullptr)
-            return 0;
-
-        queue<Node*> nodeQueue;
-        nodeQueue.push(root);
-        int height = 0;
-
-        while (!nodeQueue.empty()) {
-            int size = nodeQueue.size();
-
-            while (size > 0) {
-                Node* current = nodeQueue.front();
-                nodeQueue.pop();
-
-                if (current->left)
-                    nodeQueue.push(current->left);
-
-                if (current->right)
-                    nodeQueue.push(current->right);
-
-                size--;
-            }
-
-            height++;
-        }
-
-        return height;
-    }
-
-    int rLeafCount(Node *root) {
-        if(root == NULL)
-            return 0;
-        // Condition for leaf Node
-        else if(root->left == NULL and root->right == NULL)
-            return 1;
+        if (val1< parent->data)
+            parent->left = new Node(val1,val2);
         else
-            return rLeafCount(root->right) + rLeafCount(root->left);
+            parent->right = new Node(val1,val2);
     }
 
-    int iLeafCount(Node* root) {
-        if (root == nullptr)
-            return 0;
-
-        stack<Node*> nodeStack;
-        nodeStack.push(root);
-        int leafCount = 0;
-
-        while (!nodeStack.empty()) {
-            Node* current = nodeStack.top();
-            nodeStack.pop();
-
-            if (current->left == nullptr && current->right == nullptr)
-                leafCount++;
-
-            if (current->right)
-                nodeStack.push(current->right);
-
-            if (current->left)
-                nodeStack.push(current->left);
+    void update(string val1, string val2)
+    {
+        if(root==nullptr)
+        {
+            cout<<"Binary Search Tree is Empty";
+            return;
         }
-
-        return leafCount;
-    }
-
-    void rDeleteTree(Node* root) {
-        if (root == NULL) return;
-
-        rDeleteTree(root->left);
-        rDeleteTree(root->right);
-
-        cout << "\n Deleting node: " << root->data;
-        delete root;
-    }
-
-    void iDeleteTree(Node* root) {
-        if (root == nullptr)
-            return;
-
-        std::stack<Node*> nodeStack;
-        nodeStack.push(root);
-
-        while (!nodeStack.empty()) {
-            Node* current = nodeStack.top();
-            nodeStack.pop();
-
-            if (current->right)
-                nodeStack.push(current->right);
-
-            if (current->left)
-                nodeStack.push(current->left);
-
-            cout << "\n Deleting node: " << current->data;
-            delete current;
-        }
-    }
-
-    void rpreorder(Node *root)
-    {
-        if(root == NULL)
-            return;
-
-        cout<<root->data<<" ";
-        rpreorder(root->left);
-        rpreorder(root->right);
-    }
-
-    void rinorder(Node *root)
-    {
-        if(root == NULL)
-            return;
-
-        rinorder(root->left);
-        cout<<root->data<<" ";
-        rinorder(root->right);
-    }
-
-    void rpostorder(Node *root)
-    {
-        if(root == NULL)
-            return;
-
-        rpostorder(root->left);
-        rpostorder(root->right);
-        cout<<root->data<<" ";
-    }
-
-    public: 
-
-    Node *root = nullptr;
-    
-    BT() {
-        cout<<"Enter Data for root"<<endl;
-        buildTree(root);
-    }
-
-    void operator = (BT &Tree) {
-        this->root = iClone(Tree.root);
-    }
-
-    void iinorder() {
-        Node *curr = root;
-        stack<Node*> Stack;
-        while(!Stack.empty() or curr != nullptr) {
-            while(curr != nullptr) {
-                Stack.push(curr);
-                curr = curr->left;
+        Node* p = root;
+        while(p!=nullptr && p->data!=val1)
+        {
+            if(p->data > val1)
+            {
+                p=p->left;
             }
-            curr = Stack.top();
-            Stack.pop();
-            cout<<curr->data<<" ";
-            curr = curr->right;
+            else
+            {
+                p=p->right;
+            }
         }
+        if(p==nullptr)
+        {
+            cout<<"Entry is not present in BST";
+        }
+        p->meaning=val2;
+        
     }
 
-    void ipreorder() {
+    void Inorder_trav(Node *root)
+    {
         if(root == nullptr)
+        {
             return;
+        }
+        Inorder_trav(root->left);
+        cout<< root->data << ": "<<root->meaning<<endl;
+        Inorder_trav(root->right);
+    }
 
-        stack<Node*> Stack;
-        Stack.push(root);
-        while(!Stack.empty()) {
-            Node *poppedNode = Stack.top();
-            Stack.pop();
-            cout<<poppedNode->data<<" ";
-            if(poppedNode->right)
-                Stack.push(poppedNode->right);
-            if(poppedNode->left)
-                Stack.push(poppedNode->left);
+    void descend_ord(Node *root)
+    {
+        if(root == nullptr)
+        {
+            return;
+        }
+        descend_ord(root->right);
+        cout<< root->data << ": "<<root->meaning<<endl;
+        descend_ord(root->left);
+    }
+
+    Node *getroot()
+    {
+        return root;
+    }
+
+    Node *InSuccessor(Node *root)
+    {
+        if (root == nullptr || root->right == nullptr)
+        {
+            cout << "\nInorder Successor not present\n";
+            return nullptr;
+        }
+        Node *p = root->right;
+        while (p->left != nullptr)
+        {
+            p = p->left;
+        }
+        return p;
+    }
+
+
+    Node *Search_child(Node *root,string val)
+    {
+        Node *parent=nullptr;
+        Node *child=root;
+        while(child!=nullptr)
+        {
+            parent=child;
+            if(child->data < val)
+            {
+                child=child->right;
+            }
+            else if(child->data >val)
+            {
+                child=child->left;
+            }
+            else
+            {
+                return child;
+            }
+        }
+        if(child==nullptr)
+        {
+            cout<<"\nElement not present\n";
+        }
+        return nullptr;
+    }
+
+    Node *Search_parent(Node *root,string val)
+    {
+        Node *parent=nullptr;
+        Node *child=root;
+        while(child!=nullptr)
+        {
+            if(child->data < val)
+            {
+                parent=child;
+                child=child->right;
+            }
+            else if(child->data >val)
+            {
+                parent=child;
+                child=child->left;
+            }
+            else
+            {
+                return parent;
+            }
+        }
+        if(child==nullptr)
+        {
+            cout<<"\nElement not present\n";
+        }
+        return parent;
+    }
+
+
+    void del(Node *root,string val)
+    {
+        Node *c = Search_child(root, val);
+        if (c == nullptr)
+        {
+            cout << "\nElement not present\n";
+            return;
+        }
+
+        Node *p = Search_parent(root, val);
+        if (c->left == nullptr && c->right == nullptr)
+        {
+            if (p == nullptr)
+            {
+                this->root = nullptr;
+            }
+            else if (p->left == c)
+            {
+                p->left = nullptr;
+            }
+            else
+            {
+                p->right = nullptr;
+            }
+            delete c;
+        }
+        else if (c->left == nullptr || c->right == nullptr)
+        {
+            Node *child;
+            if (c->left!=nullptr)
+            {
+                child = c->left;
+            }
+            else
+            {
+                child = c->right;
+            }
+            
+            if (p == nullptr)
+            {
+                this->root = child;
+            }
+            else if (p->left == c)
+            {
+                p->left = child;
+            }
+            else
+            {
+                p->right = child;
+            }
+            delete c;
+        }
+        else
+        {
+            Node *successor = InSuccessor(c);
+            string tempData = successor->data;
+            string tempMeaning = successor->meaning;
+            del(root,successor->data);
+            c->data = tempData;
+            c->meaning = tempMeaning;
         }
     }
 
-    void ipostorder() {
-        stack<Node*> s1, s2;
-        s1.push(root);
-        while(!s1.empty()) {
-            Node *temp = s1.top();
-            s1.pop();
-            s2.push(temp);
-            if(temp->right)
-                s1.push(temp->right);
-            if(temp->left)
-                s1.push(temp->left);
+    int maxcompar(Node *root)
+    {
+        if(root==nullptr)
+        {
+            return -1;
         }
-        while(!s2.empty()) {
-            cout<<s2.top()->data<<" ";
-            s2.pop();
-        }
+        int lcompar = maxcompar(root->left);
+        int rcompar = maxcompar(root->right);
+        return max(lcompar,rcompar)+1;
     }
+
+    int compar(Node *root,string val)
+    {
+        int count=0;
+        Node *current=root;
+        while(current!=nullptr)
+        {
+            if(current->data < val)
+            {
+                count+=1;
+                current=current->right;
+            }
+            else if(current->data > val)
+            {
+                count+=1;
+                current=current->left;
+            }else
+            {
+                count+=1;
+                return count;
+            }
+        }
+        return -1;
+    }
+
 };
 
-int main() {
-    BT Tree;
+
+int main()
+{
+    BST B1;
+    string val1,val2;
+    int n;
+
+    do
+    {
+        cout<<"\nEnter the Operation: ";
+        cout<<"\n1.Add Word";
+        cout<<"\n2.Update Meaning";
+        cout<<"\n3.Delete Word";
+        cout<<"\n4.Display Words in Ascending Order";
+        cout<<"\n5.Display Words in Descending Order";
+        cout<<"\n6.Maximum Comparisons";
+        cout<<"\n7.Search element\n";
+        cin>>n;
+
+        switch(n)
+        {
+            case 1: cout<<"\nEnter the word:";
+                    cin>>val1;
+                    cout<<"Enter it's meaning:";
+                    cin>>val2;
+                    B1.insert(val1,val2);
+                    cout<<"\n";
+                    B1.Inorder_trav(B1.getroot());
+                    break;
+            
+            case 2: cout<<"\nEnter the word for updating:";
+                    cin>>val1;
+                    cout<<"Enter it's updated meaning:";
+                    cin>>val2;
+                    B1.update(val1,val2);
+                    cout<<"\n";
+                    B1.Inorder_trav(B1.getroot());
+                    break;
+            
+            case 3: cout<<"\nEnter the word to be deleted:";
+                    cin>>val1;
+                    B1.del(B1.getroot(),val1);
+                    cout<<"\n";
+                    B1.Inorder_trav(B1.getroot());
+                    break;
+            
+            case 4: cout<<"\n";
+                    B1.Inorder_trav(B1.getroot());
+                    break;
+
+            case 5: cout<<"\n";
+                    B1.descend_ord(B1.getroot());
+                    break;
+
+            case 6: cout<<"\nMaximum Comparisons are :"<<B1.maxcompar(B1.getroot())<<endl;
+                    break;
+            
+            case 7: cout<<"\nEnter word to be Searched: ";
+                    cin>>val1;
+                    if(B1.Search_child(B1.getroot(),val1))
+                    {
+                        cout<<"\nElement Present\n";
+                        cout<<"\nElement found in "<<B1.compar(B1.getroot(),val1)<<" comparisions\n";
+                    }
+                    break;
+        }
+    }while(n>0 && n<8);
     return 0;
 }
