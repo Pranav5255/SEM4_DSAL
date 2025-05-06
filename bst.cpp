@@ -16,12 +16,12 @@ class Node
     Node *right;
     public:
     Node(string val1, string val2) : data(val1) , meaning(val2) , left(nullptr) , right(nullptr) {}
-    friend class BST;
+    friend class BST;                                                        //allows BST to access private members of node.
 };
 
 class BST
 {
-    private:
+    private:                                                                //
     Node *root;
     public:
     BST(): root(nullptr){}
